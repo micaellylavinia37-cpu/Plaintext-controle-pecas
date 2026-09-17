@@ -34,14 +34,17 @@ df = carregar_dados()
 # --- BARRA LATERAL (MENU E EQUIPE) ---
 st.sidebar.title("⚖️ Escritório Modelo")
 menu = st.sidebar.selectbox(
-    "Selecione o Painel", ["Painel do Administrador", "Painel do Estagiário"]
+    "Escolha a Seção",
+    [
+        "Cadastrar Peça",
+        "Visão Geral (Administração)",
+        "Painel do Estagiário",
+    ],
 )
 
 st.sidebar.markdown("---")
 st.sidebar.markdown("### 🏛️ Equipe do Escritório")
-st.sidebar.markdown(
-    "**Advogada Líder Geral:**\nDra. Ivelise Fonseca de Matteu"
-)
+st.sidebar.markdown("**Coordenadora:**\nDra. Ivelise Fonseca de Matteu")
 st.sidebar.markdown("**Advogado:**\nDr. Kensley")
 st.sidebar.markdown("**Assistente Administrativo:**\nLavinia Cunha")
 
@@ -60,11 +63,11 @@ lista_estagiarios = [
     "Ellen Rafaela",
 ]
 
-if menu == "Painel do Administrador":
-  st.subheader("🛠️ Painel do Administrador - Cadastro e Acompanhamento")
+# --- ABA 1: CADASTRAR PEÇA ---
+if menu == "Cadastrar Peça":
+  st.subheader("🛠️ Cadastro de Nova Peça Jurídica")
 
   with st.form("form_cadastro"):
-    st.markdown("### Cadastrar Nova Peça")
     titulo_peca = st.text_input(
         "Título / Descrição da Peça (Ex: Contestação - Proc. X)"
     )
@@ -101,8 +104,10 @@ if menu == "Painel do Administrador":
             "Por favor, preencha o título da peça e o número do processo."
         )
 
-  st.markdown("---")
-  st.markdown("### 📊 Visão Geral de Todas as Peças")
+# --- ABA 2: VISÃO GERAL (ADMINISTRAÇÃO) ---
+elif menu == "Visão Geral (Administração)":
+  st.subheader("📊 Visão Geral e Gerenciamento de Todas as Peças")
+
   if not df.empty:
     filtro_status = st.selectbox(
         "Filtrar por Status", ["Todos", "Pendente", "OK"]
@@ -113,11 +118,10 @@ if menu == "Painel do Administrador":
 
     st.dataframe(df_exibicao, use_container_width=True)
 
-    st.markdown("### Gerenciar Registros")
+    st.markdown("---")
+    st.markdown("### Excluir Registro")
     id_para_excluir = st.number_input(
-        "Digite o ID da peça que deseja excluir (opcional):",
-        min_value=0,
-        step=1,
+        "Digite o ID da peça que deseja excluir:", min_value=0, step=1
     )
     if st.button("Excluir Peça"):
       if id_para_excluir in df["ID"].values:
@@ -130,6 +134,7 @@ if menu == "Painel do Administrador":
   else:
     st.info("Nenhuma peça cadastrada no momento.")
 
+# --- ABA 3: PAINEL DO ESTAGIÁRIO ---
 elif menu == "Painel do Estagiário":
   st.subheader("👨‍💻 Painel do Estagiário")
 
