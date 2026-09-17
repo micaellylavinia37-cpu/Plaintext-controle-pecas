@@ -37,10 +37,18 @@ menu = st.sidebar.selectbox(
 )
 
 lista_estagiarios = [
-    "Ana Souza",
-    "Carlos Silva",
-    "Mariana Costa",
-    "João Pedro",
+    "Ana Luiza Fleuri ",
+    " Alexandre Augusto Silva",
+    "Ester Coutinho da Cruz ",
+    "Bruna Renata das neves margonato",
+  " Joel Batista de Oliveira "
+    "Aldemar Silva Júnior "
+    " Lavínia Micaely Rodrigues Cunha"
+    "Luana Barbosa de Lima  "
+"Madai Zupan Artola"
+"Richard Rodrigues Chieus"
+    " Ellen Rafela"
+    
 ]
 
 if menu == "Painel do Administrador":
