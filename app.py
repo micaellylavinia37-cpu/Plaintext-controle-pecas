@@ -2,7 +2,9 @@ import pandas as pd
 import streamlit as st
 
 st.set_page_config(
-    page_title="Controle de Peças - Estagiários", page_icon="⚖️", layout="wide"
+    page_title="Controle de Peças - Escritório Modelo",
+    page_icon="⚖️",
+    layout="wide",
 )
 
 DB_FILE = "dados_pecas.csv"
@@ -29,26 +31,26 @@ def salvar_dados(df):
 
 df = carregar_dados()
 
-st.title("⚖️ Sistema de Controle de Peças Jurídicas")
-st.markdown("Gerenciamento de demandas e status para estagiários.")
-
+# --- BARRA LATERAL (MENU E EQUIPE) ---
+st.sidebar.title("⚖️ Escritório Modelo")
 menu = st.sidebar.selectbox(
     "Selecione o Painel", ["Painel do Administrador", "Painel do Estagiário"]
 )
 
+st.sidebar.markdown("---")
+st.sidebar.markdown("### 🏛️ Equipe do Escritório")
+st.sidebar.markdown(
+    "**Advogada Líder Geral:**\nDra. Ivelise Fonseca de Matteu"
+)
+st.sidebar.markdown("**Advogado:**\nDr. Kensley")
+st.sidebar.markdown("**Assistente Administrativo:**\nLavinia Cunha")
+
+# Lista oficial com os estagiários corretos
 lista_estagiarios = [
-    "Ana Luiza Fleuri ",
-    " Alexandre Augusto Silva",
-    "Ester Coutinho da Cruz ",
+    "Ana Luiza Fleuri",
+    "Alexandre Augusto Silva",
+    "Ester Coutinho da Cruz",
     "Bruna Renata das neves margonato",
-  " Joel Batista de Oliveira "
-    "Aldemar Silva Júnior "
-    " Lavínia Micaely Rodrigues Cunha"
-    "Luana Barbosa de Lima  "
-"Madai Zupan Artola"
-"Richard Rodrigues Chieus"
-    " Ellen Rafela"
-    
 ]
 
 if menu == "Painel do Administrador":
@@ -69,7 +71,9 @@ if menu == "Painel do Administrador":
     if submitted:
       if titulo_peca and numero_processo:
         novo_id = (
-            int(df["ID"].max() + 1) if not df.empty and pd.notna(df["ID"].max()) else 1
+            int(df["ID"].max() + 1)
+            if not df.empty and pd.notna(df["ID"].max())
+            else 1
         )
         nova_linha = pd.DataFrame([{
             "ID": novo_id,
@@ -122,8 +126,20 @@ if menu == "Painel do Administrador":
 elif menu == "Painel do Estagiário":
   st.subheader("👨‍💻 Painel do Estagiário")
 
+  # --- Orientações para o Estagiário ---
+  with st.expander("📌 Orientações e Instruções de Uso (Clique para abrir)"):
+    st.markdown("""
+        **Instruções para os Estagiários:**
+        1. Selecione o seu nome completo no menu abaixo.
+        2. Confira a lista de peças e processos atribuídos a você.
+        3. Assim que concluir a elaboração ou conferência da peça, clique no botão **"Marcar como OK"**.
+        4. O status será atualizado automaticamente para a coordenação acompanhar. Bom trabalho!
+        """)
+
+  st.markdown("---")
+
   estagiario_logado = st.selectbox(
-      "Quem é você?", ["Selecione seu nome..."] + lista_estagiarios
+      "Selecione o seu nome:", ["Selecione seu nome..."] + lista_estagiarios
   )
 
   if estagiario_logado != "Selecione seu nome...":
