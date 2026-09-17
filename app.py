@@ -12,13 +12,29 @@ DB_FILE = "dados_pecas.csv"
 
 def carregar_dados():
   try:
-    return pd.read_csv(DB_FILE)
+    df = pd.read_csv(DB_FILE)
+    # Garante compatibilidade caso o arquivo antigo não tenha as novas colunas
+    colunas_necessarias = [
+        "ID",
+        "Titulo_Peca",
+        "Numero_Processo",
+        "Estagiario",
+        "Instrucoes_Admin",
+        "Relatorio_Estagiario",
+        "Status",
+    ]
+    for col in colunas_necessarias:
+      if col not in df.columns:
+        df[col] = ""
+    return df
   except FileNotFoundError:
     df_inicial = pd.DataFrame(columns=[
         "ID",
         "Titulo_Peca",
         "Numero_Processo",
         "Estagiario",
+        "Instrucoes_Admin",
+        "Relatorio_Estagiario",
         "Status",
     ])
     df_inicial.to_csv(DB_FILE, index=False)
@@ -65,7 +81,7 @@ lista_estagiarios = [
 
 # --- ABA 1: CADASTRAR PEÇA ---
 if menu == "Cadastrar Peça":
-  st.subheader("🛠️ Cadastro de Nova Peça Jurídica")
+  st.subheader("🛠️ Cadastro de Nova Peça Jurídica com Instruções")
 
   with st.form("form_cadastro"):
     titulo_peca = st.text_input(
@@ -74,6 +90,12 @@ if menu == "Cadastrar Peça":
     numero_processo = st.text_input("Número do Processo")
     estagiario_resp = st.selectbox(
         "Estagiário Responsável", lista_estagiarios
+    )
+
+    # NOVO: Campo onde o administrador escreve o que o estagiário deve fazer
+    instrucoes_admin = st.text_area(
+        "O que o estagiário deve fazer? (Orientações, prazos e diretrizes da"
+        " peça)"
     )
 
     submitted = st.form_submit_button("Cadastrar Peça")
@@ -90,6 +112,8 @@ if menu == "Cadastrar Peça":
             "Titulo_Peca": titulo_peca,
             "Numero_Processo": numero_processo,
             "Estagiario": estagiario_resp,
+            "Instrucoes_Admin": instrucoes_admin,
+            "Relatorio_Estagiario": "",  # Começa vazio para o estagiário preencher
             "Status": "Pendente",
         }])
 
@@ -106,7 +130,9 @@ if menu == "Cadastrar Peça":
 
 # --- ABA 2: VISÃO GERAL (ADMINISTRAÇÃO) ---
 elif menu == "Visão Geral (Administração)":
-  st.subheader("📊 Visão Geral e Gerenciamento de Todas as Peças")
+  st.subheader(
+      "📊 Visão Geral, Instruções e Relatórios Enviados pelos Estagiários"
+  )
 
   if not df.empty:
     filtro_status = st.selectbox(
@@ -138,14 +164,14 @@ elif menu == "Visão Geral (Administração)":
 elif menu == "Painel do Estagiário":
   st.subheader("👨‍💻 Painel do Estagiário")
 
-  # --- Orientações para o Estagiário ---
+  # --- Orientações Gerais ---
   with st.expander("📌 Orientações e Instruções de Uso (Clique para abrir)"):
     st.markdown("""
         **Instruções para os Estagiários:**
         1. Selecione o seu nome completo no menu abaixo.
-        2. Confira a lista de peças e processos atribuídos a você.
-        3. Assim que concluir a elaboração ou conferência da peça, clique no botão **"Marcar como OK"**.
-        4. O status será atualizado automaticamente para a coordenação acompanhar. Bom trabalho!
+        2. Confira as demandas atribuídas a você e leia atentamente o que deve ser feito (orientações do escritório).
+        3. Escreva o seu **relatório de atividade** (o que você fez, fundamentação utilizada e o que achou).
+        4. Assim que concluir, clique no botão **"Marcar como OK"** para enviar à coordenação. Bom trabalho!
         """)
 
   st.markdown("---")
@@ -161,18 +187,46 @@ elif menu == "Painel do Estagiário":
 
     if not df_estagiario.empty:
       for index, row in df_estagiario.iterrows():
-        col1, col2, col3, col4 = st.columns([3, 2, 2, 2])
+        st.markdown(f"### 📄 Peça: {row['Titulo_Peca']}")
+        st.markdown(f"**Processo:** {row['Numero_Processo']}")
 
-        with col1:
-          st.write(f"**Peça:** {row['Titulo_Peca']}")
-        with col2:
-          st.write(f"**Processo:** {row['Numero_Processo']}")
-        with col3:
+        # Mostra o que o administrador escreveu para o estagiário fazer
+        if pd.notna(row["Instrucoes_Admin"]) and row["Instrucoes_Admin"] != "":
+          st.info(f"💡 **O que deve ser feito:**\n\n{row['Instrucoes_Admin']}")
+        else:
+          st.info("💡 **O que deve ser feito:** Nenhuma instrução específica.")
+
+        # NOVO: Caixa de texto para o estagiário escrever o relatório do que ele fez
+        relatorio_atual = (
+            row["Relatorio_Estagiario"]
+            if pd.notna(row["Relatorio_Estagiario"])
+            else ""
+        )
+        novo_relatorio = st.text_area(
+            "Escreva aqui o seu relatório (o que você fez, pesquisas realizadas"
+            f" e conclusões):",
+            value=relatorio_atual,
+            key=f"rel_{row['ID']}",
+        )
+
+        # Botão para salvar o relatório escrito pelo estagiário
+        if st.button("Salvar Relatório", key=f"salvar_rel_{row['ID']}"):
+          df.loc[df["ID"] == row["ID"], "Relatorio_Estagiario"] = (
+              novo_relatorio
+          )
+          salvar_dados(df)
+          st.success("Relatório salvo com sucesso!")
+          st.rerun()
+
+        # Status e botões de conclusão
+        col_status, col_btn = st.columns([2, 2])
+        with col_status:
           if row["Status"] == "OK":
             st.success("Status: OK ✅")
           else:
             st.warning("Status: Pendente ⏳")
-        with col4:
+
+        with col_btn:
           if row["Status"] == "Pendente":
             if st.button("Marcar como OK", key=f"btn_{row['ID']}"):
               df.loc[df["ID"] == row["ID"], "Status"] = "OK"
