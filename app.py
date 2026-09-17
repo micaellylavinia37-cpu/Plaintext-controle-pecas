@@ -45,12 +45,19 @@ st.sidebar.markdown(
 st.sidebar.markdown("**Advogado:**\nDr. Kensley")
 st.sidebar.markdown("**Assistente Administrativo:**\nLavinia Cunha")
 
-# Lista oficial com os estagiários corretos
+# Lista completa com todos os estagiários
 lista_estagiarios = [
     "Ana Luiza Fleuri",
     "Alexandre Augusto Silva",
     "Ester Coutinho da Cruz",
     "Bruna Renata das neves margonato",
+    "Joel Batista de Oliveira",
+    "Aldemar Silva Júnior",
+    "Lavínia Micaely Rodrigues Cunha",
+    "Luana Barbosa de Lima",
+    "Madai Zupan Artola",
+    "Richard Rodrigues Chieus",
+    "Ellen Rafaela",
 ]
 
 if menu == "Painel do Administrador":
